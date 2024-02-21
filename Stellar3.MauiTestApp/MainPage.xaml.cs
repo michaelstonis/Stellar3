@@ -11,9 +11,9 @@ public partial class MainPage : ContentPage
     {
         BindingContext = ViewModel = new MyViewModel();
 
-        ViewModel.BindOneWay(this, vm => vm.Counter.Value, ui => ui.CounterLabel.Text, x => $"Current Count: {x}");
-        
         InitializeComponent();
+        
+        ViewModel.BindOneWay(this, vm => vm.Counter.Value, ui => ui.CounterLabel.Text, x => $"Current Count: {x}");
     }
 
     private void OnCounterClicked(object sender, EventArgs e)
