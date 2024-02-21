@@ -5,11 +5,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
-namespace ReactiveMarbles.PropertyChanged;
+namespace Stellar3.PropertyChanged;
 
 /// <summary>
 /// Set of extension methods that handle binding.
@@ -34,7 +31,7 @@ public static class BindExtensions
         TTarget targetObject,
         Expression<Func<TFrom, TPropertyType>> fromProperty,
         Expression<Func<TTarget, TPropertyType>> toProperty,
-        IScheduler scheduler = null)
+        TimeProvider scheduler = null)
         where TFrom : class, INotifyPropertyChanged
     {
         if (fromObject is null)
@@ -53,7 +50,7 @@ public static class BindExtensions
     /// <param name="fromProperty">A expression to the host property.</param>
     /// <param name="toProperty">A expression to the target property.</param>
     /// <param name="conversionFunc">A converter which will convert the property from the host to the target property.</param>
-    /// <param name="scheduler">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
+    /// <param name="timeProvider">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
     /// <typeparam name="TFrom">The type of property the host is.</typeparam>
     /// <typeparam name="TFromProperty">The property from type.</typeparam>
     /// <typeparam name="TTarget">The target property.</typeparam>
@@ -66,7 +63,7 @@ public static class BindExtensions
         Expression<Func<TFrom, TFromProperty>> fromProperty,
         Expression<Func<TTarget, TTargetProperty>> toProperty,
         Func<TFromProperty, TTargetProperty> conversionFunc,
-        IScheduler scheduler = null)
+        TimeProvider? timeProvider = null)
         where TFrom : class, INotifyPropertyChanged
     {
         if (fromObject is null)
@@ -77,7 +74,7 @@ public static class BindExtensions
         var hostObs = fromObject.WhenChanged(fromProperty)
             .Select(conversionFunc);
 
-        return OneWayBindImplementation(targetObject, hostObs, toProperty, scheduler);
+        return OneWayBindImplementation(targetObject, hostObs, toProperty, timeProvider);
     }
 
     /// <summary>
@@ -89,7 +86,7 @@ public static class BindExtensions
     /// <param name="toProperty">A expression to the target property.</param>
     /// <param name="hostToTargetConv">A converter which will convert the property from the host to the target property.</param>
     /// <param name="targetToHostConv">A converter which will convert the property from the target to the host property.</param>
-    /// <param name="scheduler">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
+    /// <param name="timeProvider">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
     /// <typeparam name="TFrom">The type of property the host is.</typeparam>
     /// <typeparam name="TFromProperty">The property from type.</typeparam>
     /// <typeparam name="TTarget">The target property.</typeparam>
@@ -103,7 +100,7 @@ public static class BindExtensions
         Expression<Func<TTarget, TTargetProperty>> toProperty,
         Func<TFromProperty, TTargetProperty> hostToTargetConv,
         Func<TTargetProperty, TFromProperty> targetToHostConv,
-        IScheduler scheduler = null)
+        TimeProvider? timeProvider = null)
         where TFrom : class, INotifyPropertyChanged
         where TTarget : class, INotifyPropertyChanged
     {
@@ -113,7 +110,7 @@ public static class BindExtensions
             .Skip(1) // We have the host to win first off.
             .Select(targetToHostConv);
 
-        return BindTwoWayImplementation(fromObject, targetObject, hostObs, targetObs, fromProperty, toProperty, scheduler);
+        return BindTwoWayImplementation(fromObject, targetObject, hostObs, targetObs, fromProperty, toProperty, timeProvider);
     }
 
     /// <summary>
@@ -123,7 +120,7 @@ public static class BindExtensions
     /// <param name="targetObject">The object which contains the target property.</param>
     /// <param name="fromProperty">A expression to the host property.</param>
     /// <param name="toProperty">A expression to the target property.</param>
-    /// <param name="scheduler">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
+    /// <param name="timeProvider">A scheduler for performing the binding on. Defaults to ImmediateScheduler.</param>
     /// <typeparam name="TFrom">The type of property the host is.</typeparam>
     /// <typeparam name="TProperty">The property from type.</typeparam>
     /// <typeparam name="TTarget">The target property.</typeparam>
@@ -134,7 +131,7 @@ public static class BindExtensions
         TTarget targetObject,
         Expression<Func<TFrom, TProperty>> fromProperty,
         Expression<Func<TTarget, TProperty>> toProperty,
-        IScheduler scheduler = null)
+        TimeProvider? timeProvider = null)
         where TFrom : class, INotifyPropertyChanged
         where TTarget : class, INotifyPropertyChanged
     {
@@ -142,17 +139,17 @@ public static class BindExtensions
         var targetObs = targetObject.WhenChanged(toProperty)
             .Skip(1); // We have the host to win first off.
 
-        return BindTwoWayImplementation(fromObject, targetObject, hostObs, targetObs, fromProperty, toProperty, scheduler);
+        return BindTwoWayImplementation(fromObject, targetObject, hostObs, targetObs, fromProperty, toProperty, timeProvider);
     }
 
     private static IDisposable BindTwoWayImplementation<TFrom, TFromProperty, TTarget, TTargetProperty>(
         TFrom fromObject,
         TTarget targetObject,
-        IObservable<TTargetProperty> hostObs,
-        IObservable<TFromProperty> targetObs,
+        Observable<TTargetProperty> hostObs,
+        Observable<TFromProperty> targetObs,
         Expression<Func<TFrom, TFromProperty>> fromProperty,
         Expression<Func<TTarget, TTargetProperty>> toProperty,
-        IScheduler scheduler)
+        TimeProvider? timeProvider = null)
     {
         if (hostObs is null)
         {
@@ -179,25 +176,25 @@ public static class BindExtensions
             throw new ArgumentException("The expression does not bind to a valid member.");
         }
 
-        if ((scheduler ?? ImmediateScheduler.Instance) != ImmediateScheduler.Instance)
+        if (timeProvider is not null)
         {
-            hostObs = hostObs.ObserveOn(scheduler);
-            targetObs = targetObs.ObserveOn(scheduler);
+            hostObs = hostObs.ObserveOn(timeProvider);
+            targetObs = targetObs.ObserveOn(timeProvider);
         }
 
         var setterTo = toProperty.GetSetter();
         var setterFrom = fromProperty.GetSetter();
 
         return new CompositeDisposable(
-            hostObs.Subscribe(x => setterTo(targetObject, x)),
-            targetObs.Subscribe(x => setterFrom(fromObject, x)));
+            hostObs.Subscribe((setterTo, targetObject), (x, state) => state.setterTo(state.targetObject, x)),
+            targetObs.Subscribe((setterFrom, fromObject), (x, state) => state.setterFrom(state.fromObject, x)));
     }
 
     private static IDisposable OneWayBindImplementation<TTarget, TPropertyType>(
         TTarget targetObject,
-        IObservable<TPropertyType> hostObs,
+        Observable<TPropertyType> hostObs,
         Expression<Func<TTarget, TPropertyType>> property,
-        IScheduler scheduler)
+        TimeProvider? timeProvider = null)
     {
         if (hostObs is null)
         {
@@ -214,12 +211,13 @@ public static class BindExtensions
             throw new ArgumentException("The expression does not bind to a valid member.");
         }
 
-        if ((scheduler ?? ImmediateScheduler.Instance) != ImmediateScheduler.Instance)
+        if (timeProvider is not null)
         {
-            hostObs = hostObs.ObserveOn(scheduler);
+            hostObs = hostObs.ObserveOn(timeProvider);
         }
 
         var setter = property.GetSetter();
-        return hostObs.Subscribe(x => setter(targetObject, x));
+        
+        return hostObs.Subscribe((setter, targetObject), (x, state) => state.setter(state.targetObject, x));
     }
 }

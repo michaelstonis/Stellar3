@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ReactiveMarbles.PropertyChanged;
+namespace Stellar3.PropertyChanged;
 
 internal static class GetMemberFuncCache<TFrom, TReturn>
 {

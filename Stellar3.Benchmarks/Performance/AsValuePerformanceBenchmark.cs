@@ -16,7 +16,7 @@ namespace ReactiveMarbles.Mvvm.Benchmarks.Performance;
 /// <summary>
 /// Benchmark for the AsValue.
 /// </summary>
-[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net80)]
 [MemoryDiagnoser]
 [MarkdownExporterAttribute.GitHub]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]

@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ReactiveMarbles.PropertyChanged;
+namespace Stellar3.PropertyChanged;
 #if !UIKIT
 internal sealed class MemberFuncCacheKeyComparer : IEqualityComparer<MemberInfo>
 {

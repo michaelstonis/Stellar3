@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 
 using DynamicData.Binding;
 
+using ReactiveMarbles.Mvvm;
 using ReactiveMarbles.PropertyChanged;
 
 namespace ReactiveMarbles.Mvvm.Benchmarks.Memory;
@@ -16,9 +17,9 @@ namespace ReactiveMarbles.Mvvm.Benchmarks.Memory;
 /// <summary>
 /// A dummy rx object.
 /// </summary>
-public class DummyRxObject : RxObject
+public class DummyRxObject : ReactiveMarbles.Mvvm.RxObject
 {
-    private readonly IValueBinder<string?> _observableProperty;
+    private readonly ValueBinder<string?> _observableProperty;
 
     [IgnoreDataMember]
     private string? _isNotNullString;

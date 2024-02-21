@@ -5,23 +5,24 @@
 using System;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Reactive.Subjects;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
+using R3;
 using ReactiveMarbles.PropertyChanged;
 using ReactiveUI;
+using CompositeDisposable = System.Reactive.Disposables.CompositeDisposable;
 
 namespace ReactiveMarbles.Mvvm.Benchmarks.Memory;
 
 /// <summary>
-/// Benchmark for the RxObject.
+/// Benchmark for the R3RxObject.
 /// </summary>
-[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net80)]
 [MemoryDiagnoser]
 [MarkdownExporterAttribute.GitHub]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class RxObjectMemoryBenchmark
+public class R3RxObjectMemoryBenchmark
 {
     /// <summary>
     /// Gets or sets a parameter for how many numbers to create.
@@ -51,10 +52,10 @@ public class RxObjectMemoryBenchmark
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectCreation()
+    public void R3RxObjectCreation()
     {
         var unused = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
     }
 
@@ -63,10 +64,10 @@ public class RxObjectMemoryBenchmark
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectWithChange()
+    public void R3RxObjectWithChange()
     {
         var thing = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
 
         foreach (var dummy in thing)
@@ -94,14 +95,14 @@ public class RxObjectMemoryBenchmark
     }
 
     /// <summary>
-    /// A benchmark for rx object and when any value subscription.
+    /// A benchmark for R3Rx object and when any value subscription.
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectWhenAnyValueWithSubscribe()
+    public void R3RxObjectWhenAnyValueWithSubscribe()
     {
         var thing = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
 
         foreach (var dummy in thing)
@@ -111,15 +112,16 @@ public class RxObjectMemoryBenchmark
     }
 
     /// <summary>
-    /// A benchmark for rx object and when any value subscription and disposal.
+    /// A benchmark for R3Rx object and when any value subscription and disposal.
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectWhenAnyValueWithSubscribeAndDispose()
+    public void R3RxObjectWhenAnyValueWithSubscribeAndDispose()
     {
         var disposables = new CompositeDisposable();
+        var frameProvider = new FakeFrameProvider();
         var thing = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
 
         foreach (var dummy in thing)
@@ -129,37 +131,37 @@ public class RxObjectMemoryBenchmark
     }
 
     /// <summary>
-    /// A benchmark for rx object and when changed subscription.
+    /// A benchmark for R3Rx object and when changed subscription.
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectWhenChangedWithSubscribe()
+    public void R3RxObjectWhenChangedWithSubscribe()
     {
         var thing = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
 
         foreach (var dummy in thing)
         {
-            dummy.WhenChanged(x => x.IsNotNullString).Subscribe();
+            dummy.WhenAnyValue(x => x.IsNotNullString).Subscribe();
         }
     }
 
     /// <summary>
-    /// A benchmark for rx object and when changed subscription and disposal.
+    /// A benchmark for R3Rx object and when changed subscription and disposal.
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Memory")]
-    public void RxObjectWhenChangedWithSubscribeAndDispose()
+    public void R3RxObjectWhenChangedWithSubscribeAndDispose()
     {
         var disposables = new CompositeDisposable();
         var thing = Enumerable.Range(0, CreateNumber)
-            .Select(_ => new DummyRxObject())
+            .Select(_ => new DummyR3RxObject())
             .ToList();
 
         foreach (var dummy in thing)
         {
-            dummy.WhenChanged(x => x.IsNotNullString).Subscribe().DisposeWith(disposables);
+            dummy.WhenAnyValue(x => x.IsNotNullString).Subscribe().DisposeWith(disposables);
         }
     }
 }

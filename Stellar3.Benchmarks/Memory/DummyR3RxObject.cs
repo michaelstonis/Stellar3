@@ -2,24 +2,20 @@
 // ReactiveUI Association Incorporated licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
-
-using DynamicData.Binding;
-
-using ReactiveMarbles.Mvvm;
-using ReactiveMarbles.PropertyChanged;
+using ObservableCollections;
+using R3;
+using Stellar3.PropertyChanged;
 
 namespace ReactiveMarbles.Mvvm.Benchmarks.Memory;
 
 /// <summary>
 /// A dummy rx object.
 /// </summary>
-public class DummyRxObject : ReactiveMarbles.Mvvm.RxObject
+public class DummyR3RxObject : Stellar3.RxObject
 {
-    private readonly ValueBinder<string?> _observableProperty;
+    private readonly BindableReactiveProperty<string> _observableProperty;
 
     [IgnoreDataMember]
     private string? _isNotNullString;
@@ -44,14 +40,14 @@ public class DummyRxObject : ReactiveMarbles.Mvvm.RxObject
     /// <summary>
     /// Initializes a new instance of the <see cref="DummyRxObject"/> class.
     /// </summary>
-    public DummyRxObject()
+    public DummyR3RxObject()
     {
-        TestCollection = new ObservableCollectionExtended<int>();
-
+        TestCollection = new ObservableList<int>();
+        
         _observableProperty =
             this.WhenChanged(x => x.IsOnlyOneWord)
-                .Select(x => x + "Changed")
-                .AsValue(onChanged: x => RaisePropertyChanged(nameof(ObservableProperty)));
+                .Select(x => (x ?? string.Empty) + "Changed")
+                .ToBindableReactiveProperty(string.Empty);
     }
 
     /// <summary>
@@ -117,7 +113,7 @@ public class DummyRxObject : ReactiveMarbles.Mvvm.RxObject
     /// Gets or sets the test collection.
     /// </summary>
     [DataMember]
-    public ObservableCollectionExtended<int> TestCollection { get; protected set; }
+    public ObservableList<int> TestCollection { get; protected set; }
 
     /// <summary>
     /// Gets or sets the uses expr raise set.

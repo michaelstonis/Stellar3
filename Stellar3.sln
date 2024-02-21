@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stellar3", "Stellar3\Stellar3.csproj", "{086DA30E-2D4C-49A7-9FA6-725BD8E767EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stellar3.Benchmarks", "Stellar3.Benchmarks\Stellar3.Benchmarks.csproj", "{1E9B056D-4B04-4523-951F-50083DE7D94E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stellar3.MauiTestApp", "Stellar3.MauiTestApp\Stellar3.MauiTestApp.csproj", "{6CD90B02-8F84-4ABB-9041-7CC7119B3A8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{086DA30E-2D4C-49A7-9FA6-725BD8E767EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{086DA30E-2D4C-49A7-9FA6-725BD8E767EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{086DA30E-2D4C-49A7-9FA6-725BD8E767EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E9B056D-4B04-4523-951F-50083DE7D94E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E9B056D-4B04-4523-951F-50083DE7D94E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E9B056D-4B04-4523-951F-50083DE7D94E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E9B056D-4B04-4523-951F-50083DE7D94E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CD90B02-8F84-4ABB-9041-7CC7119B3A8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CD90B02-8F84-4ABB-9041-7CC7119B3A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CD90B02-8F84-4ABB-9041-7CC7119B3A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CD90B02-8F84-4ABB-9041-7CC7119B3A8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

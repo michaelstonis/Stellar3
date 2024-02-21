@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="ObservableCollections.R3" Version="2.0.2" />
+      <PackageReference Include="R3" Version="1.0.3" />
+    </ItemGroup>
+
 </Project>

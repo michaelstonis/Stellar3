@@ -5,11 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
 
-namespace ReactiveMarbles.PropertyChanged;
+namespace Stellar3.PropertyChanged;
 
 /// <summary>
 /// Provides extension methods for the notify property changed extensions.
@@ -26,7 +24,7 @@ public static class NotifyPropertyChangedExtensions
     /// <returns>An observable that signals when the property specified in the expression has changed.</returns>
     /// <exception cref="ArgumentNullException">Either the property expression or the object to monitor is null.</exception>
     /// <exception cref="ArgumentException">If there is an issue with the property expression.</exception>
-    public static IObservable<TReturn> WhenChanged<TObj, TReturn>(
+    public static Observable<TReturn> WhenChanged<TObj, TReturn>(
         this TObj objectToMonitor,
         Expression<Func<TObj, TReturn>> propertyExpression)
         where TObj : class, INotifyPropertyChanged
@@ -81,7 +79,7 @@ public static class NotifyPropertyChangedExtensions
     /// <returns>An observable that signals when the property specified in the expression has changed.</returns>
     /// <exception cref="ArgumentNullException">Either the property expression or the object to monitor is null.</exception>
     /// <exception cref="ArgumentException">If there is an issue with the property expression.</exception>
-    public static IObservable<(object Sender, TReturn Value)> WhenChangedWithSender<TObj, TReturn>(
+    public static Observable<(object Sender, TReturn Value)> WhenChangedWithSender<TObj, TReturn>(
         this TObj objectToMonitor,
         Expression<Func<TObj, TReturn>> propertyExpression)
         where TObj : class, INotifyPropertyChanged
@@ -91,7 +89,7 @@ public static class NotifyPropertyChangedExtensions
             throw new ArgumentNullException(nameof(propertyExpression));
         }
 
-        IObservable<(object Sender, INotifyPropertyChanged Value)> currentObservable = Observable.Return(((object)null, (INotifyPropertyChanged)objectToMonitor));
+        Observable<(object Sender, INotifyPropertyChanged Value)> currentObservable = Observable.Return(((object)null, (INotifyPropertyChanged)objectToMonitor));
 
         var expressionChain = propertyExpression.Body.GetExpressionChain();
 
@@ -126,51 +124,55 @@ public static class NotifyPropertyChangedExtensions
         throw new ArgumentException("Invalid expression", nameof(propertyExpression));
     }
 
-    private static IObservable<T> GenerateObservable<T>(
+    private static Observable<T> GenerateObservable<T>(
         INotifyPropertyChanged parent,
         MemberInfo memberInfo,
         Func<INotifyPropertyChanged, T> getter)
     {
         var memberName = memberInfo.Name;
-        return Observable.Create<T>(
-                observer =>
+        return Observable.Create<T, string>(
+                memberName,
+                (observer, state) =>
                 {
                     void Handler(object sender, PropertyChangedEventArgs e)
                     {
-                        if (e.PropertyName == memberName)
+                        if (e.PropertyName == state)
                         {
                             observer.OnNext(getter(parent));
                         }
                     }
 
                     parent.PropertyChanged += Handler;
+                    
+                    observer.OnNext(getter(parent));
 
-                    return Disposable.Create(parent, x => x.PropertyChanged -= Handler);
-                })
-            .StartWith(getter(parent));
+                    return Disposable.Create(x => x.PropertyChanged -= Handler, parent);
+                });
     }
 
-    private static IObservable<(object Sender, T Value)> GenerateObservableWithSender<T>(
+    private static Observable<(object Sender, T Value)> GenerateObservableWithSender<T>(
         INotifyPropertyChanged parent,
         MemberInfo memberInfo,
         Func<INotifyPropertyChanged, T> getter)
     {
         var memberName = memberInfo.Name;
-        return Observable.Create<(object Sender, T Value)>(
-                observer =>
+        return Observable.Create<(object Sender, T Value), string>(
+                memberName,
+                (observer, state) =>
                 {
                     void Handler(object sender, PropertyChangedEventArgs e)
                     {
-                        if (e.PropertyName == memberName)
+                        if (e.PropertyName == state)
                         {
                             observer.OnNext((sender, getter(parent)));
                         }
                     }
 
+                    observer.OnNext((parent, getter(parent)));
+                    
                     parent.PropertyChanged += Handler;
 
-                    return Disposable.Create(parent, x => x.PropertyChanged -= Handler);
-                })
-            .StartWith((parent, getter(parent)));
+                    return Disposable.Create(x => x.PropertyChanged -= Handler, parent);
+                });
     }
 }

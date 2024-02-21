@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <OutputType>Exe</OutputType>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+        <PackageReference Include="ReactiveMarbles.Mvvm" Version="1.0.46" />
+        <PackageReference Include="ReactiveMarbles.PropertyChanged" Version="2.0.27" />
+        <PackageReference Include="ReactiveUI" Version="19.5.41" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Stellar3\Stellar3.csproj" />
+    </ItemGroup>
+    
+</Project>

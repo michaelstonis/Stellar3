@@ -1,6 +1,1 @@
-namespace Stellar3;
-
-public class GlobalUsings
-{
-    
-}
+global using R3;

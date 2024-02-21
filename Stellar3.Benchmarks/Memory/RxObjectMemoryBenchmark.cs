@@ -17,7 +17,7 @@ namespace ReactiveMarbles.Mvvm.Benchmarks.Memory;
 /// <summary>
 /// Benchmark for the RxObject.
 /// </summary>
-[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net80)]
 [MemoryDiagnoser]
 [MarkdownExporterAttribute.GitHub]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
